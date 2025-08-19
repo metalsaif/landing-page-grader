@@ -1,103 +1,103 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { TipDisplay } from "@/components/TipDisplay";
+import { ConvertButton } from "@/components/ConvertButton";
+import { Footer } from "@/components/Footer";
+import { InputArea } from "@/components/InputArea";
+import { OutputArea } from "@/components/OutputArea";
+import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [inputCode, setInputCode] = useState("");
+  const [outputCode, setOutputCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [tip, setTip] = useState("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleClear = () => {
+    setInputCode("");
+    setOutputCode("");
+    setTip("");
+  };
+
+   const handleConvert = async () => {
+    setIsLoading(true);
+    setOutputCode("");
+    setTip(""); 
+
+    try {
+      const response = await fetch("/api/refactor", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ code: inputCode }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setOutputCode(`Error: ${errorData.error || "Something went wrong."}`);
+        return;
+      }
+
+      const data = await response.json();
+      const cleanedCode = data.refactoredCode
+        .replace(/```html/g, "")
+        .replace(/```/g, "")
+        .trim();
+        
+      setOutputCode(cleanedCode);
+      setTip(data.tip);
+
+    } catch (error) {
+      console.error("Failed to fetch:", error);
+      setOutputCode("Error: Failed to connect to the server.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    // MODIFIED: Updated background colors for a better theme
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-sky-950 text-slate-800 dark:text-slate-200 transition-colors">
+      
+      <header className="container mx-auto px-4 py-4 flex justify-end">
+        <ThemeSwitcher />
+      </header>
+      
+       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col">
+        <section className="text-center mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
+            AI Tailwind Refactor Copilot
+          </h1>
+          <p className="mt-4 text-lg text-slate-700 max-w-2xl mx-auto dark:text-slate-300">
+            Paste your messy HTML or CSS, and let our AI refactor it into clean, best-practice Tailwind CSS code.
+          </p>
+        </section>
+
+        {/* MODIFIED: Added "flex-grow" to make this section fill available space */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 flex-grow">
+          <InputArea value={inputCode} onChange={setInputCode} />
+          <OutputArea value={outputCode} />
+        </div>
+
+        <TipDisplay tip={tip} />
+        
+        <div className="mt-8 flex flex-wrap justify-center gap-4">
+          <ConvertButton onClick={handleConvert} isLoading={isLoading} />
+          {(inputCode || outputCode) && (
+            // MODIFIED: Updated button colors for a better light theme
+            <button
+              onClick={handleClear}
+              className="px-8 py-3 font-semibold rounded-md text-blue-600 dark:text-slate-300 bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 transition-colors"
+            >
+              Clear
+            </button>
+          )}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      <Footer />
     </div>
   );
 }
