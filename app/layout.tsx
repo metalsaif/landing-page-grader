@@ -7,8 +7,8 @@ import { Providers } from "./providers"; // Import the new provider
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Tailwind Refactor Copilot",
-  description: "Refactor your messy code into clean Tailwind CSS",
+  title: "AI Tailwind CSS Refactor Copilot | Convert CSS to Tailwind",
+  description: "A free, AI-powered tool to instantly refactor messy CSS, inline styles, or HTML into clean, best-practice Tailwind CSS. No sign-up required.",
 };
 
 export default function RootLayout({

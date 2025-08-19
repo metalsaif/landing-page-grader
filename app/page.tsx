@@ -68,7 +68,7 @@ export default function Home() {
        <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col">
         <section className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            AI Tailwind Refactor Copilot
+            AI Tailwind Refactor Copilot!
           </h1>
           <p className="mt-4 text-lg text-slate-700 max-w-2xl mx-auto dark:text-slate-300">
             Paste your messy HTML or CSS, and let our AI refactor it into clean, best-practice Tailwind CSS code.
