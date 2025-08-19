@@ -52,7 +52,7 @@ export function OutputArea({ value }: OutputAreaProps) {
             height: "100%",
             overflow: "auto"
           }}
-          codeTagProps={{ style: { fontFamily: "inherit" } }}
+          codeTagProps={{ style: { fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" } }}
           wrapLongLines={true}
         >
           {value || "Your clean code will appear here..."}
