@@ -53,7 +53,7 @@ export default function Home() {
         const cleanedJsonString = data.aiResponseText.replace(/```json/g, "").replace(/```/g, "").trim();
         const parsedJson = JSON.parse(cleanedJsonString);
         refactoredCode = parsedJson.refactoredCode || "";
-        // You can set the tip here too: setTip(parsedJson.tip || "");
+        setTip(parsedJson.tip || "");
       } catch (e) {
         refactoredCode = data.aiResponseText; // Fallback
       }
