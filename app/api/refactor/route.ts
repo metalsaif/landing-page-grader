@@ -1,27 +1,38 @@
+// app/api/refactor/route.ts
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import prettier from "prettier";
 import * as prettierPluginTailwind from "prettier-plugin-tailwindcss";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+// MODIFICATION 1: Add maxDuration to prevent Vercel serverless timeouts.
+export const maxDuration = 60; 
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
+  // MODIFICATION 2: Add a check for the API key before using it.
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "GOOGLE_API_KEY is not set in environment variables." }, { status: 500 });
+  }
+  
+  // Use the verified apiKey to initialize the client.
+  const genAI = new GoogleGenerativeAI(apiKey);
+
   try {
     const { code } = await request.json();
-    if (!code) { /* ... error handling ... */ }
+    if (!code) {
+      return NextResponse.json({ error: "No code provided." }, { status: 400 });
+    }
 
-    // MODIFICATION: The prompt now asks for a JSON object with a 'tip' field.
     const prompt = `
       You are an expert Tailwind CSS developer. Your task is to refactor a snippet of HTML/CSS into clean, best-practice Tailwind CSS.
-      
       Analyze the code for potential improvements beyond simple class conversion, such as using 'gap' for spacing, improving accessibility, or simplifying layout structure.
-      
       Your response MUST be a valid JSON object with the following structure:
       {
         "refactoredCode": "The refactored HTML code...",
         "tip": "A concise, helpful tip for improvement. If there's no obvious tip, return an empty string."
       }
-
       Here is the code to refactor:
       \`\`\`html
       ${code}
@@ -36,17 +47,14 @@ export async function POST(request: Request) {
     let refactoredCode = "";
     let tip = "";
 
-    // MODIFICATION: Robustly parse the AI's JSON response
     try {
-      // First, clean any markdown formatting around the JSON
       const cleanedJsonString = aiResponseText.replace(/```json/g, "").replace(/```/g, "").trim();
       const parsedJson = JSON.parse(cleanedJsonString);
       refactoredCode = parsedJson.refactoredCode || "";
       tip = parsedJson.tip || "";
     } catch (e) {
-      // Fallback if AI fails to return valid JSON
       console.error("Failed to parse AI JSON response:", e);
-      refactoredCode = aiResponseText; // Assume the whole response is the code
+      refactoredCode = aiResponseText;
       tip = "The AI response was not in the expected format.";
     }
 
@@ -55,12 +63,10 @@ export async function POST(request: Request) {
       plugins: [prettierPluginTailwind],
     });
 
-    // MODIFICATION: Return the code AND the tip to the client
     return NextResponse.json({ refactoredCode: formattedCode, tip });
 
   } catch (error) {
     console.error("Error in API route:", error);
-    // **THE FIX IS HERE:** We now correctly return a detailed error response.
     return NextResponse.json(
       { error: "An error occurred on the server. Please check the logs." },
       { status: 500 }
