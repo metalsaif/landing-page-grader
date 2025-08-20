@@ -10,7 +10,7 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 import prettier from "prettier/standalone";
 import * as prettierPluginHtml from "prettier/plugins/html";
-import * as prettierPluginTailwind from "prettier-plugin-tailwindcss";
+//import * as prettierPluginTailwind from "prettier-plugin-tailwindcss";
 
 export default function Home() {
   const [inputCode, setInputCode] = useState("");
@@ -61,7 +61,7 @@ export default function Home() {
       // Now, format the code in the browser
       const formattedCode = await prettier.format(refactoredCode, {
         parser: "html",
-        plugins: [prettierPluginHtml, prettierPluginTailwind],
+        plugins: [prettierPluginHtml],
       });
       
       setOutputCode(formattedCode);
