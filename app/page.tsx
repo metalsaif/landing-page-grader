@@ -10,7 +10,6 @@ import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
 import prettier from "prettier/standalone";
 import * as prettierPluginHtml from "prettier/plugins/html";
-//import * as prettierPluginTailwind from "prettier-plugin-tailwindcss";
 
 export default function Home() {
   const [inputCode, setInputCode] = useState("");
@@ -32,9 +31,7 @@ export default function Home() {
     try {
       const response = await fetch("/api/refactor", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: inputCode }),
       });
 
@@ -46,7 +43,6 @@ export default function Home() {
 
       const data = await response.json();
       
-      // MODIFICATION: All parsing and formatting logic is now here
       let refactoredCode = "";
       
       try {
@@ -55,13 +51,14 @@ export default function Home() {
         refactoredCode = parsedJson.refactoredCode || "";
         setTip(parsedJson.tip || "");
       } catch (e) {
-        refactoredCode = data.aiResponseText; // Fallback
+        refactoredCode = data.aiResponseText; 
+        setTip("Tip could not be generated as the AI response was not in the expected format.");
       }
 
-      // Now, format the code in the browser
+      // Format the code in the browser with the HTML plugin
       const formattedCode = await prettier.format(refactoredCode, {
         parser: "html",
-        plugins: [prettierPluginHtml],
+        plugins: [prettierPluginHtml], // <-- The HTML plugin is back
       });
       
       setOutputCode(formattedCode);
@@ -75,13 +72,10 @@ export default function Home() {
   };
 
   return (
-    // MODIFIED: Updated background colors for a better theme
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-sky-950 text-slate-800 dark:text-slate-200 transition-colors">
-      
       <header className="container mx-auto px-4 py-4 flex justify-end">
         <ThemeSwitcher />
       </header>
-      
        <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col">
         <section className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
@@ -91,19 +85,14 @@ export default function Home() {
             Paste your messy HTML or CSS, and let our AI refactor it into clean, best-practice Tailwind CSS code.
           </p>
         </section>
-
-        {/* MODIFIED: Added "flex-grow" to make this section fill available space */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 flex-grow">
           <InputArea value={inputCode} onChange={setInputCode} />
           <OutputArea value={outputCode} />
         </div>
-
         <TipDisplay tip={tip} />
-        
         <div className="mt-8 flex flex-wrap justify-center gap-4">
           <ConvertButton onClick={handleConvert} isLoading={isLoading} />
           {(inputCode || outputCode) && (
-            // MODIFIED: Updated button colors for a better light theme
             <button
               onClick={handleClear}
               className="px-8 py-3 font-semibold rounded-md text-blue-600 dark:text-slate-300 bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 transition-colors"
@@ -113,7 +102,6 @@ export default function Home() {
           )}
         </div>
       </main>
-
       <Footer />
     </div>
   );
