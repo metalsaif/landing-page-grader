@@ -8,7 +8,7 @@ export function Footer() {
       <p>
         Need a beautiful, robust landing page?{" "}
         <a
-          href="https://your-linktree-url.com" // Remember to use your actual URL
+          href="https://linktr.ee/metalsaif" // Remember to use your actual URL
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-emerald-500 dark:text-emerald-400 hover:underline"
