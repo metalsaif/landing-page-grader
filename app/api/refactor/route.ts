@@ -59,6 +59,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ refactoredCode: formattedCode, tip });
 
   } catch (error) {
-    // ... error handling ...
+    console.error("Error in API route:", error);
+    // **THE FIX IS HERE:** We now correctly return a detailed error response.
+    return NextResponse.json(
+      { error: "An error occurred on the server. Please check the logs." },
+      { status: 500 }
+    );
   }
 }
