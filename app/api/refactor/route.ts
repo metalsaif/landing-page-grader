@@ -2,21 +2,16 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
-import prettier from "prettier";
-import * as prettierPluginTailwind from "prettier-plugin-tailwindcss";
 
-// MODIFICATION 1: Add maxDuration to prevent Vercel serverless timeouts.
 export const maxDuration = 60; 
 export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
-  // MODIFICATION 2: Add a check for the API key before using it.
   const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "GOOGLE_API_KEY is not set in environment variables." }, { status: 500 });
+    return NextResponse.json({ error: "GOOGLE_API_KEY is not set." }, { status: 500 });
   }
   
-  // Use the verified apiKey to initialize the client.
   const genAI = new GoogleGenerativeAI(apiKey);
 
   try {
@@ -27,7 +22,6 @@ export async function POST(request: Request) {
 
     const prompt = `
       You are an expert Tailwind CSS developer. Your task is to refactor a snippet of HTML/CSS into clean, best-practice Tailwind CSS.
-      Analyze the code for potential improvements beyond simple class conversion, such as using 'gap' for spacing, improving accessibility, or simplifying layout structure.
       Your response MUST be a valid JSON object with the following structure:
       {
         "refactoredCode": "The refactored HTML code...",
@@ -44,26 +38,9 @@ export async function POST(request: Request) {
     const response = result.response;
     const aiResponseText = response.text();
 
-    let refactoredCode = "";
-    let tip = "";
-
-    try {
-      const cleanedJsonString = aiResponseText.replace(/```json/g, "").replace(/```/g, "").trim();
-      const parsedJson = JSON.parse(cleanedJsonString);
-      refactoredCode = parsedJson.refactoredCode || "";
-      tip = parsedJson.tip || "";
-    } catch (e) {
-      console.error("Failed to parse AI JSON response:", e);
-      refactoredCode = aiResponseText;
-      tip = "The AI response was not in the expected format.";
-    }
-
-    const formattedCode = await prettier.format(refactoredCode, {
-      parser: "html",
-      plugins: [prettierPluginTailwind],
-    });
-
-    return NextResponse.json({ refactoredCode: formattedCode, tip });
+    // The API's job is now DONE. It just sends the raw response back.
+    // The JSON parsing and formatting will happen on the client.
+    return NextResponse.json({ aiResponseText });
 
   } catch (error) {
     console.error("Error in API route:", error);

@@ -8,6 +8,10 @@ import { InputArea } from "@/components/InputArea";
 import { OutputArea } from "@/components/OutputArea";
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 
+import prettier from "prettier/standalone";
+import * as prettierPluginHtml from "prettier/plugins/html";
+import * as prettierPluginTailwind from "prettier-plugin-tailwindcss";
+
 export default function Home() {
   const [inputCode, setInputCode] = useState("");
   const [outputCode, setOutputCode] = useState("");
@@ -41,13 +45,26 @@ export default function Home() {
       }
 
       const data = await response.json();
-      const cleanedCode = data.refactoredCode
-        .replace(/```html/g, "")
-        .replace(/```/g, "")
-        .trim();
-        
-      setOutputCode(cleanedCode);
-      setTip(data.tip);
+      
+      // MODIFICATION: All parsing and formatting logic is now here
+      let refactoredCode = "";
+      
+      try {
+        const cleanedJsonString = data.aiResponseText.replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsedJson = JSON.parse(cleanedJsonString);
+        refactoredCode = parsedJson.refactoredCode || "";
+        // You can set the tip here too: setTip(parsedJson.tip || "");
+      } catch (e) {
+        refactoredCode = data.aiResponseText; // Fallback
+      }
+
+      // Now, format the code in the browser
+      const formattedCode = await prettier.format(refactoredCode, {
+        parser: "html",
+        plugins: [prettierPluginHtml, prettierPluginTailwind],
+      });
+      
+      setOutputCode(formattedCode);
 
     } catch (error) {
       console.error("Failed to fetch:", error);
