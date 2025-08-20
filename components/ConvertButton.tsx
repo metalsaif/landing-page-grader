@@ -1,17 +1,21 @@
+// components/ConvertButton.tsx
+
+// MODIFICATION: Define a type for the component's props
 interface ConvertButtonProps {
   onClick: () => void;
   isLoading: boolean;
+  loadingMessage: string;
 }
 
-export function ConvertButton({ onClick, isLoading }: ConvertButtonProps) {
+// MODIFICATION: Apply the type to the props
+export const ConvertButton = ({ onClick, isLoading, loadingMessage }: ConvertButtonProps) => {
   return (
     <button
-      type="button"
-      className="px-8 py-3 font-semibold rounded-md text-white bg-gradient-to-r from-blue-500 to-emerald-500 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
       onClick={onClick}
       disabled={isLoading}
+      className="px-8 py-3 font-semibold rounded-md text-white bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:disabled:bg-emerald-400 transition-colors min-w-[270px]"
     >
-      {isLoading ? "Refactoring..." : "Convert to Tailwind CSS"}
+      {isLoading ? loadingMessage : "Convert to Tailwind CSS"}
     </button>
   );
-}
+};
