@@ -1,3 +1,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add scrollbar styling to the pre tags inside our code output areas */
+.dark::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dark::-webkit-scrollbar-track {
+  background: #0d1117; /* The dark background color */
+}
+
+.dark::-webkit-scrollbar-thumb {
+  background: #30363d; /* A lighter color for the "thumb" */
+  border-radius: 4px;
+}
+
+.dark::-webkit-scrollbar-thumb:hover {
+  background: #6e7781; /* A lighter color when hovered */
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f6f8fa; /* Your default light background color */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db; /* A thumb color that works on light backgrounds */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af; /* A slightly darker gray on hover */
+}
