@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // This is the correct configuration for this problem.
-  // It tells Next.js to explicitly include the file that its automatic
-  // file tracer is missing.
-  outputFileTracingIncludes: {
-    '/api/refactor': ['./node_modules/prettier-plugin-tailwindcss/dist/css/preflight.css'],
-  },
+  // This is a global instruction to the Next.js bundler to include
+  // all files within the prettier-plugin-tailwindcss directory,
+  // regardless of whether they are explicitly imported.
+  unstable_includeFiles: [
+    './node_modules/prettier-plugin-tailwindcss/**/*',
+  ],
 };
 
 export default nextConfig;
