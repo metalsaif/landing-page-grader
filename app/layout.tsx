@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers"; // Import the new provider
+import "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
 
 const inter = Inter({ subsets: ["latin"] });
 
