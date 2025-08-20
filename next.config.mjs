@@ -1,9 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    // This tells the Vercel bundler to include the entire contents of these packages,
-    // preventing files like 'preflight.css' from being removed.
-    serverExternalPackages: ["prettier", "prettier-plugin-tailwindcss"],
+  // This is the correct configuration for this problem.
+  // It tells Next.js to explicitly include the file that its automatic
+  // file tracer is missing.
+  outputFileTracingIncludes: {
+    '/api/refactor': ['./node_modules/prettier-plugin-tailwindcss/dist/css/preflight.css'],
   },
 };
 
