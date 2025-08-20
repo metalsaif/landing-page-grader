@@ -12,28 +12,45 @@ interface OutputAreaProps {
 
 export function OutputArea({ value }: OutputAreaProps) {
   const [isCopied, setIsCopied] = useState(false);
+  // Get the theme from the hook
   const { theme } = useTheme();
+  // We MUST wait for the component to be mounted on the client
   const [mounted, setMounted] = useState(false);
   const [highlightedHtml, setHighlightedHtml] = useState("");
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   useEffect(() => {
-    async function highlight() {
-      if (mounted) {
+    // This effect's ONLY job is to re-highlight when the code or theme changes.
+    // We will only run it if the component is mounted AND we know the theme.
+    if (mounted && theme) {
+      async function highlight() {
+        const currentTheme = theme === 'dark' ? 'github-dark' : 'github-light';
         const html = await codeToHtml(value || "Your clean code will appear here...", {
           lang: 'html',
-          theme: theme === 'dark' ? 'github-dark' : 'github-light',
+          theme: currentTheme,
         });
         setHighlightedHtml(html);
       }
+      highlight();
     }
-    highlight();
-  }, [value, theme, mounted]);
+  }, [value, theme, mounted]); // This dependency array is key
 
-  const handleCopy = () => { /* ... */ };
-  useEffect(() => { /* ... */ }, [isCopied]);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(value);
+    setIsCopied(true);
+  };
 
+  useEffect(() => {
+    if (isCopied) {
+      const timer = setTimeout(() => setIsCopied(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isCopied]);
+
+  // The placeholder is crucial. It renders until both `mounted` is true AND `theme` is known.
   if (!mounted || !highlightedHtml) {
     return (
       <div className="relative flex flex-col h-full">
@@ -50,18 +67,10 @@ export function OutputArea({ value }: OutputAreaProps) {
       <label htmlFor="output-code" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
         Refactored Tailwind Code
       </label>
-      
-      {/* 
-        MODIFICATION: The key is to render the HTML from Shiki directly.
-        Shiki's output includes a <pre> tag with its OWN background color.
-        We just need to make sure this div doesn't add a conflicting background.
-        The overflow-hidden and rounded-md will now correctly apply to Shiki's output.
-      */}
       <div 
         className="flex-grow overflow-hidden rounded-md border border-slate-300 dark:border-slate-700 text-sm [&>pre]:!h-full [&>pre]:!p-4"
         dangerouslySetInnerHTML={{ __html: highlightedHtml }}
       />
-      
       {value && (
         <button
           onClick={handleCopy}
