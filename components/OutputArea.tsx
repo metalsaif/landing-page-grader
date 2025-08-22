@@ -36,7 +36,7 @@ export function OutputArea({ value }: OutputAreaProps) {
   return (
     <div className="relative flex flex-col h-full">
       <label htmlFor="output-code" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-        Refactored Tailwind Code
+        Generated Tailwind Code
       </label>
 
       {/* Attach the ref to the container that holds both highlighters */}

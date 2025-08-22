@@ -21,13 +21,19 @@ export async function POST(request: Request) {
     }
 
     const prompt = `
-      You are an expert Tailwind CSS developer. Your task is to refactor a snippet of HTML/CSS into clean, best-practice Tailwind CSS.
-      Your response MUST be a valid JSON object with the following structure:
+       You are an expert Tailwind CSS developer. Your primary goal is to generate clean, best-practice Tailwind CSS code.
+      The user will provide an input. You must first determine if the input is a descriptive prompt (e.g., "create a login form") or a snippet of existing code (HTML, CSS, JSX, etc.).
+
+      - If the input is a descriptive prompt, generate a new Tailwind CSS component that fulfills the user's request.
+      - If the input is a code snippet, refactor it into clean, best-practice Tailwind CSS. Analyze the code for potential improvements like using 'gap' for spacing, improving accessibility, or simplifying layout structure.
+
+      Regardless of the input type, your response MUST be a valid JSON object with the following structure:
       {
-        "refactoredCode": "The refactored HTML code...",
-        "tip": "A concise, helpful tip for improvement. If there's no obvious tip, return an empty string."
+        "refactoredCode": "The generated or refactored HTML code...",
+        "tip": "A concise, helpful tip. If you generated new code, describe what you built. If you refactored, explain an improvement you made. If there's no obvious tip, return an empty string."
       }
-      Here is the code to refactor:
+
+      Here is the user's input:
       \`\`\`html
       ${code}
       \`\`\`
