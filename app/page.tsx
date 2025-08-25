@@ -11,7 +11,7 @@ import { ReportData } from "@/lib/types";
 
 const LoadingState = ({ message }: { message: string }) => (
   <div className="text-center p-8">
-    <div className="mx-auto w-12 h-12 border-4 border-t-blue-500 border-slate-200 dark:border-slate-700 rounded-full animate-spin"></div>
+     <div className="mx-auto w-12 h-12 border-4 border-slate-200 border-t-blue-500 dark:border-slate-700 dark:border-t-blue-500 rounded-full animate-spin"></div>
     <p className="mt-4 text-slate-500 dark:text-slate-400">{message}</p>
   </div>
 );

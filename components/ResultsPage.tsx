@@ -141,7 +141,7 @@ export const ResultsPage = ({ data, onReset }: ResultsPageProps) => {
           My name is Saif Rahman, and I'm a front-end specialist who helps founders build high-performance websites that turn visitors into customers. If you'd like professional help fixing these issues, let's have a conversation.
         </p>
         <button 
-          onClick={() => window.location.href = 'mailto:your-email@example.com'}
+          onClick={() => window.location.href = 'https://linktr.ee/metalsaif'}
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md"
         >
           Let's Talk
