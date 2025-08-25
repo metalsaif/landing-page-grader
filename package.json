@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@types/cheerio": "^0.22.35",
+    "cheerio": "^1.1.2",
     "next": "14.2.3",
     "next-themes": "^0.3.0",
     "prettier": "^3.6.2",

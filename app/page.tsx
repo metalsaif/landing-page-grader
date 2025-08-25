@@ -1,136 +1,129 @@
+// app/page.tsx
+
 "use client";
 
 import { useState } from "react";
-import { TipDisplay } from "@/components/TipDisplay";
-import { ConvertButton } from "@/components/ConvertButton";
 import { Footer } from "@/components/Footer";
 import { InputArea } from "@/components/InputArea";
-import { OutputArea } from "@/components/OutputArea";
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
+import { ResultsPage } from "@/components/ResultsPage";
+import { ReportData } from "@/lib/types";
 
-import prettier from "prettier/standalone";
-import * as prettierPluginHtml from "prettier/plugins/html";
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const LoadingState = ({ message }: { message: string }) => (
+  <div className="text-center p-8">
+    <div className="mx-auto w-12 h-12 border-4 border-t-blue-500 border-slate-200 dark:border-slate-700 rounded-full animate-spin"></div>
+    <p className="mt-4 text-slate-500 dark:text-slate-400">{message}</p>
+  </div>
+);
 
 export default function Home() {
-  const [inputCode, setInputCode] = useState("");
-  const [outputCode, setOutputCode] = useState("");
+  const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [tip, setTip] = useState("");
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [reportData, setReportData] = useState<ReportData | null>(null);
 
-  const [loadingMessage, setLoadingMessage] = useState("Convert to Tailwind CSS");
+  const handleAnalyze = async () => {
+  if (!url) return;
+  setIsLoading(true);
+  setReportData(null);
+  setLoadingMessage("Running analysis... This can take up to 60 seconds.");
 
-  const handleClear = () => {
-    setInputCode("");
-    setOutputCode("");
-    setTip("");
+  try {
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to analyze the page. Server responded with: ${errorText}`);
+    }
+    
+    const data: ReportData = await response.json();
+    setReportData(data);
+
+  } catch (error: any) {
+    console.error("Analysis failed:", error);
+    
+    // THIS IS THE FINAL, CORRECT ERROR OBJECT
+    const errorReport: ReportData = {
+      analyzedUrl: url,
+      message: "Analysis Failed",
+      technicalChecks: {
+        h1Check: { status: 'fail', count: 0, tags: [] },
+        titleCheck: { status: 'fail', text: "Error" },
+        metaDescriptionCheck: { status: false, found: false },
+        altTextCheck: { status: 'fail', totalImages: 0, imagesWithoutAlts: 0 },
+        advancedSeoChecks: { hasSchemaOrg: false, hasOpenGraph: false, hasTwitterCard: false },
+      },
+      performanceData: {
+        overallScore: 0,
+        status: 'fail',
+        coreWebVitals: { lcp: 'N/A', cls: 'N/A', fcp: 'N/A' },
+        opportunities: [error.message || "An unknown error occurred."],
+      },
+      copywritingChecks: {
+        headlineCheck: 'fail',
+        ctaCheck: 'fail',
+        socialProofCheck: 'fail',
+      },
+      // This is the new section that fixes the error
+      securityChecks: {
+        status: 'fail',
+        usesHttps: false,
+        hasHSTS: false,
+        hasCSP: false,
+        hasXFrameOptions: false,
+        hasXContentTypeOptions: false,
+        error: "Could not perform security checks due to a prior error.",
+      },
+    };
+    setReportData(errorReport);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
+  const handleReset = () => {
+    setUrl("");
+    setReportData(null);
   };
-
-   const handleConvert = async () => {
-    setIsLoading(true);
-    setOutputCode("");
-    setTip("");
-    setLoadingMessage("Waking up the AI server..."); // Initial message 
-
-    let response;
-    let success = false;
-    const maxRetries = 3; // We will try up to 3 times
-
-    for (let i = 0; i < maxRetries; i++) {
-      try {
-        response = await fetch("/api/refactor", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: inputCode }),
-        });
-
-        if (response.ok) {
-          success = true;
-          setLoadingMessage("Refactoring..."); // Update message on success
-          break; // Exit the loop if the request was successful
-        }
-      } catch (error) {
-        console.warn(`Attempt ${i + 1} failed. Retrying...`);
-      }
-
-      // If not successful, wait 2 seconds before the next retry
-      if (i < maxRetries - 1) {
-        await sleep(2000);
-      }
-    }
-
-    if (!success || !response) {
-      setOutputCode("Error: The server is not responding. Please try again in a moment.");
-      setIsLoading(false);
-      setLoadingMessage("Convert to Tailwind CSS");
-      return;
-    }
-
-    try {
-      const data = await response.json();
-      let refactoredCode = "";
-
-      try {
-        const cleanedJsonString = data.aiResponseText.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsedJson = JSON.parse(cleanedJsonString);
-        refactoredCode = parsedJson.refactoredCode || "";
-        setTip(parsedJson.tip || "");
-      } catch (e) {
-        refactoredCode = data.aiResponseText;
-        setTip("Tip could not be generated as the AI response was not in the expected format.");
-      }
-
-      const formattedCode = await prettier.format(refactoredCode, {
-        parser: "html",
-        plugins: [prettierPluginHtml],
-      });
-      
-      setOutputCode(formattedCode);
-    } catch (error) {
-      setOutputCode("Error: Failed to process the AI response.");
-    } finally {
-      setIsLoading(false);
-      setLoadingMessage("Convert to Tailwind CSS");
-    }
-  };
-
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-sky-950 text-slate-800 dark:text-slate-200 transition-colors">
       <header className="container mx-auto px-4 py-4 flex justify-end">
         <ThemeSwitcher />
       </header>
-       <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col">
-        <section className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            AI Tailwind Copilot
-          </h1>
-          <p className="mt-4 text-lg text-slate-700 max-w-2xl mx-auto dark:text-slate-300">
-            Describe the component you need, or paste your messy code, and let our AI generate / refactor it into clean, best-practice Tailwind CSS code.
-          </p>
-        </section>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 flex-grow">
-          <InputArea value={inputCode} onChange={setInputCode} />
-          <OutputArea value={outputCode} />
-        </div>
-        <TipDisplay tip={tip} />
-        <div className="mt-8 flex flex-wrap justify-center gap-4">
-          <ConvertButton 
-            onClick={handleConvert} 
-            isLoading={isLoading} 
-            loadingMessage={loadingMessage} 
-          />
+      
+      <main className="flex-grow container mx-auto px-4 py-8 md:py-12 flex flex-col items-center justify-center">
+        
+        {reportData ? (
+          <ResultsPage data={reportData} onReset={handleReset} />
+        ) : isLoading ? (
+          <LoadingState message={loadingMessage} />
+        ) : (
+          <div className="w-full max-w-2xl text-center animate-fade-in">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-800 dark:text-slate-200">
+              Is Your Landing Page Built to Convert?
+            </h1>
+            <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
+              Get a free, instant audit of your page's technical, performance, and marketing readiness.
+            </p>
+            <div className="mt-8 flex gap-2">
+              <InputArea value={url} onChange={setUrl} placeholder="Enter your website URL (e.g., https://...)" />
+              <button
+                onClick={handleAnalyze}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-md transition-colors shadow-sm disabled:bg-blue-300"
+                disabled={isLoading || !url}
+              >
+                Analyze
+              </button>
+            </div>
+          </div>
+        )}
 
-          {(inputCode || outputCode) && (
-            <button
-              onClick={handleClear}
-              className="px-8 py-3 font-semibold rounded-md text-blue-600 dark:text-slate-300 bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 transition-colors"
-            >
-              Clear
-            </button>
-          )}
-        </div>
       </main>
       <Footer />
     </div>
