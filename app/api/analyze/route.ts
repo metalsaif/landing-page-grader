@@ -51,6 +51,7 @@ function runTechnicalChecks(html: string) {
   
   // --- Advanced SEO Checks ---
   const hasSchema = $('script[type="application/ld+json"]').length > 0;
+  
   const hasOpenGraph = $('meta[property^="og:"]').length > 0;
   const hasTwitterCard = $('meta[name^="twitter:"]').length > 0;
 
@@ -78,7 +79,7 @@ function runTechnicalChecks(html: string) {
       imagesWithoutAlts: imagesMissingAlts
     },
     advancedSeoChecks: {
-      hasSchemaOrg: hasSchema,
+      hasSchemaOrg: hasSchema, // <-- This now correctly uses the variable
       hasOpenGraph: hasOpenGraph,
       hasTwitterCard: hasTwitterCard,
     }

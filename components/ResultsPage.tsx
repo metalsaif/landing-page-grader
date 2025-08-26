@@ -20,6 +20,31 @@ const ChecklistItem = ({ status, text, children }: { status: 'pass' | 'fail', te
   );
 };
 
+const calculateOverallScore = (data: ReportData): number => {
+  let score = 0;
+  
+  // 1. Performance Score (50% of total)
+  // We'll use the Google PageSpeed score as the base, scaled to 50 points.
+  score += (data.performanceData.overallScore / 100) * 50;
+
+  // 2. Technical & SEO Score (30% of total)
+  // Let's say 5 checks, each worth 6 points (5 * 6 = 30)
+  if (data.technicalChecks.h1Check.status === 'pass') score += 6;
+  if (data.technicalChecks.titleCheck.status === 'pass') score += 6;
+  if (data.technicalChecks.metaDescriptionCheck.status) score += 6;
+  if (data.technicalChecks.altTextCheck.status === 'pass') score += 6;
+  if (data.technicalChecks.advancedSeoChecks.hasSchemaOrg) score += 6;
+
+  // 3. Copywriting & Security Score (20% of total)
+  // Let's say 4 checks, each worth 5 points (4 * 5 = 20)
+  if (data.copywritingChecks.headlineCheck === 'pass') score += 5;
+  if (data.copywritingChecks.ctaCheck === 'pass') score += 5;
+  if (data.copywritingChecks.socialProofCheck === 'pass') score += 5;
+  if (data.securityChecks.status === 'pass') score += 5;
+
+  return Math.round(score);
+};
+
 interface ResultsPageProps {
   data: ReportData;
   onReset: () => void; // A function to go back to the main page
@@ -27,7 +52,7 @@ interface ResultsPageProps {
 
 export const ResultsPage = ({ data, onReset }: ResultsPageProps) => {
   // We will build out the scoring logic and checklist sections here
-  const overallScore = data.performanceData.overallScore; // For now, we'll use the performance score
+  const overallScore = calculateOverallScore(data);
 
   return (
     <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-4xl mx-auto my-8 animate-fade-in">
@@ -45,44 +70,56 @@ export const ResultsPage = ({ data, onReset }: ResultsPageProps) => {
           <span className="text-5xl font-bold text-slate-700 dark:text-slate-300">{overallScore}</span>
           <span className="text-xl mt-1 text-slate-500">/100</span>
         </div>
-        <p className="font-semibold text-lg mt-4 text-slate-600 dark:text-slate-400">Overall Performance Score</p>
+        <p className="font-semibold text-lg mt-4 text-slate-600 dark:text-slate-400">Overall Landing Page Score</p>
       </div>
 
       {/* Checklist Sections */}
 <div className="space-y-8">
 
   {/* SECTION 1: TECHNICAL & SEO */}
-  <div>
+  {/* SECTION 1: TECHNICAL & SEO (Corrected) */}
+<div>
     <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4">Technical & SEO</h3>
     <div className="space-y-3">
       <ChecklistItem status={data.technicalChecks.h1Check.status} text="Has a Single H1 Tag">
         {data.technicalChecks.h1Check.status === 'fail' && `Found ${data.technicalChecks.h1Check.count} H1 tags. For best SEO, a page should have exactly one.`}
       </ChecklistItem>
+      
       <ChecklistItem status={data.technicalChecks.titleCheck.status} text="Has a Title Tag">
         {data.technicalChecks.titleCheck.status === 'fail' && 'A descriptive title tag is crucial for search engine visibility.'}
       </ChecklistItem>
+      
       <ChecklistItem status={data.technicalChecks.metaDescriptionCheck.status ? 'pass' : 'fail'} text="Has a Meta Description">
-        {!data.technicalChecks.metaDescriptionCheck.status && 'The meta description is the summary shown in search results. It\'s critical for click-through rates.'}
+        {!data.technicalChecks.metaDescriptionCheck.status && "The meta description is the summary shown in search results. It's critical for click-through rates."}
       </ChecklistItem>
+      
       <ChecklistItem status={data.technicalChecks.altTextCheck.status} text="All Images Have Alt Text">
         {data.technicalChecks.altTextCheck.status === 'fail' && `${data.technicalChecks.altTextCheck.imagesWithoutAlts} of ${data.technicalChecks.altTextCheck.totalImages} images are missing alt text. This hurts accessibility and SEO.`}
+      </ChecklistItem>
+      
+      <ChecklistItem 
+        status={data.technicalChecks.advancedSeoChecks.hasSchemaOrg ? 'pass' : 'fail'} 
+        text="Has Schema.org Structured Data"
+      >
+        {data.technicalChecks.advancedSeoChecks.hasSchemaOrg === false && "Schema.org data helps you get eye-catching 'Rich Snippets' in Google, which can dramatically increase clicks."}
       </ChecklistItem>
     </div>
   </div>
 
   {/* SECTION 2: PERFORMANCE */}
   <div>
-    <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4">Performance</h3>
-    <div className="space-y-3">
-      <ChecklistItem 
-        status={data.performanceData.status} 
-        text="Mobile Performance Grade"
-      >
-        Core Web Vitals: 
-        <span className="font-semibold"> LCP:</span> {data.performanceData.coreWebVitals.lcp}, 
-        <span className="font-semibold"> CLS:</span> {data.performanceData.coreWebVitals.cls}, 
-        <span className="font-semibold"> FCP:</span> {data.performanceData.coreWebVitals.fcp}
-      </ChecklistItem>
+<h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-4">Performance (from Google PageSpeed)</h3>
+<div className="space-y-3">
+{/* THIS IS THE FIX: We now show the SPECIFIC Google PageSpeed score here */}
+<ChecklistItem
+status={data.performanceData.status}
+text={`Google PageSpeed Score: ${data.performanceData.overallScore}/100`}
+>
+Core Web Vitals:
+<span className="font-semibold"> LCP:</span> {data.performanceData.coreWebVitals.lcp},
+<span className="font-semibold"> CLS:</span> {data.performanceData.coreWebVitals.cls},
+<span className="font-semibold"> FCP:</span> {data.performanceData.coreWebVitals.fcp}
+</ChecklistItem>
       {data.performanceData.opportunities && data.performanceData.opportunities.length > 0 && (
         <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-700">
           <p className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Top Opportunities for Improvement:</p>
@@ -118,7 +155,9 @@ export const ResultsPage = ({ data, onReset }: ResultsPageProps) => {
     <ChecklistItem status={data.securityChecks.status} text="Uses Modern Security Practices">
       {data.securityChecks.status === 'fail' && 'Implementing security headers like HSTS and CSP protects your users from common attacks.'}
     </ChecklistItem>
-    {/* Optional: Show a detailed breakdown of which headers are missing */}
+    
+    {/* The Schema.org item is GONE from here */}
+
     {data.securityChecks.status === 'fail' && (
       <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-200 dark:border-slate-700">
         <p className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Missing Recommendations:</p>
@@ -133,7 +172,6 @@ export const ResultsPage = ({ data, onReset }: ResultsPageProps) => {
     )}
   </div>
 </div>
-
       {/* Call to Action Section */}
       <div className="mt-12 text-center p-6 bg-slate-100 dark:bg-slate-900/50 rounded-lg">
         <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">Ready to Get Your Score to 100?</h3>
